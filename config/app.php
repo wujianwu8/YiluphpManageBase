@@ -88,7 +88,7 @@ $config = [
     'queue_mode' => 'sync',
 
     /**
-     * 系统的根域名，这里涉及到用户的cookie作用域，如：yiluphp.com
+     * 系统的一级域名，这里涉及到用户的cookie作用域，如：yiluphp.com
      **/
     'root_domain' => 'ylphp.com',
 
