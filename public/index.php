@@ -111,12 +111,14 @@ function write_applog(string $level, string $data='')
     if ($code!='UTF-8'){
         $txt = iconv($code, 'UTF-8', $txt);
     }
-    openlog("qcloud_db",LOG_PID, LOG_LOCAL5);
-    syslog(LOG_INFO, $txt);
-    closelog();
+    if (defined('LOG_LOCAL5')) {
+        openlog("qcloud_db", LOG_PID, LOG_LOCAL5);
+        syslog(LOG_INFO, $txt);
+        closelog();
+    }
     $file = $path.date('Y-m-d').'.log';
     file_put_contents($file, $txt."\n\n", FILE_APPEND);
-//    chmod($file,0755);
+    chmod($file,0755);
 }
 
 function connectMysql($options)
@@ -128,8 +130,10 @@ function connectMysql($options)
             $options['password'],
             $options['option']
         );
-        // 设置 PDO 错误模式为异常 ，用于抛出异常
+        // 设置 PDO 错误模式为异常，用于抛出异常
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        //是否在提取的时候将数值转换为字符串
+        $pdo->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
         if (isset($options['charset'])) {
             $pdo->exec('SET NAMES "'.$options['charset'].'"');
         }
@@ -1007,7 +1011,14 @@ else{
     }
 
     //解析URL路由和参数
-    $url = explode('?', $_SERVER['REQUEST_URI']);
+    if (isset($_SERVER['CONTEXT_PREFIX'])){
+        //兼容wampserver的虚拟主机模式，型如：http://localhost/test，其中test就是独立的主机名称，即CONTEXT_PREFIX的值
+        $request_uri = substr($_SERVER['REQUEST_URI'], strlen($_SERVER['CONTEXT_PREFIX']));
+    }
+    else{
+        $request_uri = $_SERVER['REQUEST_URI'];
+    }
+    $url = explode('?', $request_uri);
     $request_uri = $url[0];
     if($request_uri!='/' && !empty($config['rewrite_route'])){
         foreach ($config['rewrite_route'] as $key => $value){
