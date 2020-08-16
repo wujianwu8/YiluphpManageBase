@@ -115,8 +115,11 @@ function write_applog(string $level, string $data='')
     syslog(LOG_INFO, $txt);
     closelog();
     $file = $path.date('Y-m-d').'.log';
+    $log_file_exists = file_exists($file);
     file_put_contents($file, $txt."\n\n", FILE_APPEND);
-//    chmod($file,0755);
+    if (!$log_file_exists){
+        chmod($file,0755);
+    }
 }
 
 function connectMysql($options)
