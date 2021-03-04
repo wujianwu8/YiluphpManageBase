@@ -1,33 +1,31 @@
-<html xmlns="http://www.w3.org/1999/html">
-<head>
-    <meta http-equiv=Content-Type content="text/html;charset=utf-8">
-    <title><?php echo $msg.'('.$err_code.')'; ?></title>
-</head>
-<body>
-<main role="main" class="container mt-3">
-    <div class="row">
-        <div class="text-center col-12 pt-5 pb-5 content-bg">
-            <?php if($err_code===-1): ?>
-            <script>
-                alert("<?php echo htmlspecialchars($msg); ?>");
-                document.location.href = "<?php echo $config['user_center']['host'] ?>/?redirect_uri="+encodeURIComponent(document.location.href);
-            </script>
-            <?php endif; ?>
+<!--{use_layout layout/main}-->
+<?php
+    $head_info = [
+        'title' => $msg.'('.$err_code.')',
+    ];
+?>
 
-            <p><?php echo $msg; ?></p>
+<?php if ($err_code==CODE_USER_NOT_LOGIN): ?>
+<script>
+    document.location.href = "<?php echo $config['user_center']; ?>?redirect_uri="+encodeURIComponent(document.location.href);
+</script>
+<?php endif; ?>
 
-            <p>ERROR CODE(<?php echo $err_code; ?>)</p>
-        </div>
-    </div>
-</main>
+<div class="error">
+    <p><?php echo $msg; ?></p>
+    <p>ERROR CODE [ <?php echo $err_code; ?> ]</p>
+    <p>
+        <a href="javascript:history.back(-1);">
+            <?php echo YiluPHP::I()->lang('back'); ?>
+        </a>
+    </p>
+</div>
 
 <?php if (!empty($backtrace)): ?>
-    <div style="background: peachpuff; color: #d00000;">
-        <h3 style="background: brown; color: gold; padding: 0.3rem 1rem;"><?php echo $app->lang('debug_mode_title'); ?></h3>
-        <pre style=" padding: 0.5rem 1.5rem 0.5rem 1.5rem;">
+<div style="background: peachpuff; color: #d00000;">
+    <h3 style="background: brown; color: gold; padding: 0.3rem 1rem;"><?php echo YiluPHP::I()->lang('debug_mode_title'); ?></h3>
+    <pre style=" padding: 0.5rem 1.5rem 0.5rem 1.5rem;">
 <?php print_r($backtrace); ?>
     </pre>
-    </div>
+</div>
 <?php endif; ?>
-</body>
-</html>

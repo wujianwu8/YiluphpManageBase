@@ -1,14 +1,32 @@
 <?php
 /*
- * csrf攻击防范类
- * YiluPHP vision 1.0
+ * csrf攻击防范类，样例文件，可删除
+ * YiluPHP vision 2.0
  * User: Jim.Wu
- * Date: 17/12/30
- * Time: 09:22
+ * Date: 2021.01.01
+ * Time: 11:19
  */
 
-class hook_csrf
+class hook_csrf extends hook
 {
+    //存储单例
+    private static $_instance = null;
+
+    /**
+     * 获取单例
+     * @return input|null
+     */
+    public static function I(){
+        if (!static::$_instance){
+            return static::$_instance = new self();
+        }
+        return static::$_instance;
+    }
+
+    public function run()
+    {
+    }
+
 	public function __construct()
 	{
 	}

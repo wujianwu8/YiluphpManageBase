@@ -9,10 +9,11 @@
  */
 
 //这里做访问权限控制
-//if (!$app->model_user_center->check_user_permission($self_info['uid'], 'view_demo_system')) {
-//    return_code(CODE_NO_AUTHORIZED, $app->lang('not_authorized'));
+//if (!model_user_center::I()->check_user_permission($self_info['uid'], 'view_demo_system')) {
+//    return_code(CODE_NO_AUTHORIZED, YiluPHP::I()->lang('not_authorized'));
+//    throw new validate_exception(YiluPHP::I()->lang('not_authorized'), CODE_NO_AUTHORIZED);
 //}
 
-$id = $app->input->get_int('id');
+$id = input::I()->get_int('id');
 
 return_result('demo/index');

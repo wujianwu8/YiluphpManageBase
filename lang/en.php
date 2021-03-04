@@ -4,7 +4,7 @@
  * User: Jim
  * UID: 83
  * Date: 2019/12/07
- * Time: 22:21
+ * Time: 11:19
  */
 return [
     'yiluphp_name' => 'YiluPHP',
@@ -28,6 +28,4 @@ return [
     'submit' => 'Submit',
     'wrong_xxx_inputted' => 'Wrong {$field} inputted',
     'xxx_minutes_ago' => '<--singular{$number} minute--><--plural{$number} minutes--> ago',
-    'home_page' => 'Home',
-    'not_authorized' => 'Not authorized',
 ];

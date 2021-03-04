@@ -6,7 +6,7 @@ $head_info = [
 ?>
 
 <h2 class="row mb-3">
-    <?php echo $app->lang('管理后台基础页面'); ?>
+    <?php echo YiluPHP::I()->lang('管理后台基础页面'); ?>
 </h2>
 <div>当前controller是：controller/demo/index.php</div>
 <div>当前模板是：template/demo/index.php</div>

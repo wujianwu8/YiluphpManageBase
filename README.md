@@ -1,21 +1,17 @@
-# YiluphpManageBase
-这是一份管理后台统一界面的基础代码：为实现所有系统的管理后台在同一个界面上操作，即UI一致，仅通过自定义菜单实现跳转到不同的系统链接。所有子系统的管理后台使用 YiluPHP Manage Base 就起到了这个作用。
+# YiluPHP
+YiluPHP是一个开源的PHP框架，实现了MVC模型、消息队列、自动生成接口文档等功能。框架实现简单、运行迅速。
+Yiluphp is an open-source PHP framework, which implements MVC model, message queue, automatic generation of interface documents and so on. The  framework is simple and fast.
 
----
-YiluPHP Manage Base 中已经实现了：
-
-1、与用户中心统一登录的对接；
-
-2、管理后台UI显示；
-
-3、从用户中心获取管理后台的菜单并展示；
-
-4、实现的与用户中心的接口调用和签名。
-
----
-
-新建一个子系统管理后台的操作步骤：
-
-1、本系统依赖于YiluphpUC的用户和权限管理，所以先下载安装 YiluphpUC；
-
-2、下载安装 YiluphpManageBase。
+框架文件只有200多KB，运行起来非常迅速，是做后端服务、微服务的好帮手，支持网站系统经常使用的功能，例如：
+1、MVC模型；
+2、分表分库；
+3、消息队列；
+4、自动生成接口文档；
+5、模板布局文件；
+6、CLI命令执行代码；
+7、类扩展，可随意增添目录，不用配置增加目录和类文件即可调用；
+8、URI路由重写；
+9、前置钩子和后置钩子；
+10、错误日志文件；
+11、在线共享函数库，所有开发者一起丰富函数库
+...

@@ -1,10 +1,10 @@
 <?php
 /*
  * 用户的配置文件
- * YiluPHP vision 1.0
+ * YiluPHP vision 2.0
  * User: Jim.Wu
- * Date: 19/12/27
- * Time: 19:21
+ * Date: 2021/02/26
+ * Time: 20:21
  */
 
 date_default_timezone_set('Asia/Shanghai');
@@ -41,6 +41,61 @@ $config = [
     'rewrite_route' => [
         '/static_file/edit_project/{project_id}' => '/static_file/edit_project/project_id/{project_id}',
     ],
+
+    /**
+     * 默认语言设置，如果你的系统使用多语言，在这里可以设置默认的语言
+     **/
+    'lang' => 'cn',
+
+    /**
+     * 在这里设置前置类，这些类会在执行controller之前执行
+     * before_controller的数组中里面可以配置多个helper的类名
+     * 用于before_controller类从构造函数__construct()开始执行
+     **/
+//    'before_controller' => ['hook_csrf'],
+
+    /**
+     * 在这里设置后置类，这些类会在执行完controller之后执行
+     * after_controller的数组中里面可以配置多个helper的类名
+     * 用于after_controller类从构造函数__construct()开始执行
+     **/
+//    'after_controller' => ['hook_header_setter'],
+
+    /**
+     * 设置默认的controller名
+     **/
+    'default_controller' => 'static_file/project_list',
+
+    /*
+     * 服务器内部错误的错误码范围
+     * 在此范围的错误码会对外界展示，并且全部显示“服务器内部错误”，详细的错误信息只会写入错误日志中
+     * 如果是DEBUG模式，则都会对外界显示详细的错误信息
+     * 数组，第一个是最小的错误码，第二个是最大的错误码，必须两个都设置才能生效，在此范围内的错误码都算是服务器内部的错误类型
+     * */
+    'inner_error_code' => [2000, 3000],
+
+    /*
+     * 是否使用session，true为使用，false为不使用，默认为false
+     * YiluPHP的session是使用redis存储的，可以实现集群服务器之间共享session
+     * */
+    'use_session' => false,
+
+    /*
+     * 用于RSA解密用的私钥
+     * 可以百度一下生成方法,将生成的private_key.pem和public_key.pem文件拷贝到你希望的、可以长期存放的位置
+     * 将private_key.pem的内容赋值给rsa_private_key参数
+     * 将public_key.pem的内容赋值给rsa_public_key参数
+     * 你可以使用file_get_contents动态获取文件内容，为了减少读磁盘文件的操作，
+     * 你也可以把文件的内容拷贝出来，原样粘贴在这两个参数的值
+     * 框架自带的公钥和密钥对为256位的，安全性很差，请自行生成更长的公钥和密钥对
+     * document目录中有文件指导：生成RAS公钥和私钥的方法.txt
+     * */
+    'rsa_private_key' => file_get_contents(APP_PATH.'document/rsa_private_key.pem'),
+    'rsa_public_key' => file_get_contents(APP_PATH.'document/rsa_public_key.pem'),
+
+];
+
+$env_config = [
 
     'mysql' => [
         //default为默认的数据库连接名，你可以自定义其它名称
@@ -85,29 +140,6 @@ $config = [
      **/
     'root_domain' => '',
 
-    /**
-     * 默认语言设置，如果你的系统使用多语言，在这里可以设置默认的语言
-     **/
-    'lang' => 'cn',
-    /**
-     * 在这里设置前置类，这些类会在执行controller之前执行
-     * before_controller的数组中里面可以配置多个helper的类名
-     * 用于before_controller类从构造函数__construct()开始执行
-     **/
-//    'before_controller' => ['hook_csrf'],
-
-    /**
-     * 在这里设置后置类，这些类会在执行完controller之后执行
-     * after_controller的数组中里面可以配置多个helper的类名
-     * 用于after_controller类从构造函数__construct()开始执行
-     **/
-//    'after_controller' => ['hook_header_setter'],
-
-    /**
-     * 设置默认的controller名
-     **/
-    'default_controller' => 'static_file/project_list',
-
     /*
      * 自定义需要显示的错误级别
         1     E_ERROR           致命的运行错误。错误无法恢复，暂停执行脚本。
@@ -147,38 +179,11 @@ $config = [
     'log_level' => ['ERROR', 'WARNING', 'DEBUG', 'NOTICE', 'VISIT', 'RESPONSE', 'ERROR', 'TRACE'],
 
     /*
-     * 服务器内部错误的错误码范围
-     * 在此范围的错误码会对外界展示，并且全部显示“服务器内部错误”，详细的错误信息只会写入错误日志中
-     * 如果是DEBUG模式，则都会对外界显示详细的错误信息
-     * 数组，第一个是最小的错误码，第二个是最大的错误码，必须两个都设置才能生效，在此范围内的错误码都算是服务器内部的错误类型
-     * */
-    'inner_error_code' => [2000, 3000],
-
-    /*
-     * 是否使用session，true为使用，false为不使用，默认为false
-     * YiluPHP的session是使用redis存储的，可以实现集群服务器之间共享session
-     * */
-    'use_session' => false,
-
-    /*
      * 当前环境标识，这在区分环境执行不一样的代码时非常有用
      * 比如：local代表开发者自己的电脑，dev代表开发环境，alpha代表测试环境，beta代表预发环境，idc或不设置代表线上（生产）环境
      * 如果在这里没设置，就会去/data/config/env文件中读，如果/data/config/env中也没有则默认为idc
      * */
     'env' => 'idc',
-
-    /*
-     * 用于RSA解密用的私钥
-     * 可以百度一下生成方法,将生成的private_key.pem和public_key.pem文件拷贝到你希望的、可以长期存放的位置
-     * 将private_key.pem的内容赋值给rsa_private_key参数
-     * 将public_key.pem的内容赋值给rsa_public_key参数
-     * 你可以使用file_get_contents动态获取文件内容，为了减少读磁盘文件的操作，
-     * 你也可以把文件的内容拷贝出来，原样粘贴在这两个参数的值
-     * 框架自带的公钥和密钥对为256位的，安全性很差，请自行生成更长的公钥和密钥对
-     * document目录中有文件指导：生成RAS公钥和私钥的方法.txt
-     * */
-    'rsa_private_key' => file_get_contents($project_root.'document/rsa_private_key.pem'),
-    'rsa_public_key' => file_get_contents($project_root.'document/rsa_public_key.pem'),
 
     /*
      * 访问接口文档的密码
@@ -199,10 +204,11 @@ $config = [
         'app_secret' => '92966665a437e7f1821999999999', //用户中心分配给的应用密钥
         'lang' => 'cn', //返回的语言
     ],
+
 ];
 
 /*
  * 针对不同环境设置不一样的配置配置信息,建议单独一个文件存放在项目目录以外的位置
  */
-//return array_merge($config, require('/data/config/www.yiluphp.com/config.php'));
-return $config;
+//return array_merge($config, require('/data/config/admin.yiluphp.com/config.php'));
+return array_merge($config, $env_config);

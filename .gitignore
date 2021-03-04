@@ -1,3 +1,5 @@
-.idea
-.DS_Store
+*.idea
+*.git
 *.log
+*.xml
+.DS_Store

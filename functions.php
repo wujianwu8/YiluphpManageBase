@@ -1,10 +1,10 @@
 <?php
 /*
  * 函数库，用户可在此添加自己所需函数
- * YiluPHP vision 1.0
+ * YiluPHP vision 2.0
  * User: Jim.Wu
- * Date: 17/12/30
- * Time: 09:43
+ * Date: 2021.01.01
+ * Time: 11:19
  */
 
 /**
@@ -19,14 +19,76 @@ function get_host_url()
 }
 
 /**
- * @name 获取当前完整的URL，包含http头和域名
- * @desc 会判断是HTTP还是HTTPS
+ * @name 获取当前URL，不包含http头、域名、参数
+ * @desc
  * @return string
  */
 function get_url()
 {
-	$http_type = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == 'on') || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')) ? 'https://' : 'http://';
-	return $http_type . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+    $url = explode('?',$_SERVER['REQUEST_URI']);
+    return $url[0];
+}
+
+/**
+ * @name 把html代码转换成可以输出给JS变量内容的字符串
+ * @desc
+ * @param string $content
+ * @return string
+ */
+function html_for_javascript_variable($content)
+{
+    $content = preg_replace('/"/', '\\"', $content);
+    $content = preg_replace("/\'/", "\\'", $content);
+    $content = preg_replace('/[\r\n]/', "\\r\\n\"+\r\n\"", $content);
+    return $content;
+}
+
+/**
+ * @name 把html代码转换成适合在（文章）列表中显示的简略内容的字符串
+ * @desc
+ * @param string $content
+ * @param integer $length 需要截取的长度
+ * @param string $suffix 如何还有更多内容，需要显示的后缀字符串
+ * @return string
+ */
+function html_for_list($content, $length=250, $suffix='...')
+{
+    $content = preg_replace('/(<\/)/', ' $1', $content );
+    $content = strip_tags($content);
+    $content = preg_replace('/[\r\n]/', ' ', $content );
+    $len = mb_strlen($content);
+    $content = htmlspecialchars_decode( $content );
+    $content = mb_substr( $content, 0, $length);
+    $content = htmlspecialchars( $content );
+    if (mb_strlen($content)<$len){
+        $content .= $suffix;
+    }
+    unset($len, $length);
+    return $content;
+}
+
+/**
+ * @name 去除回车符
+ * @desc 即\r\n
+ * @param string $content
+ * @return string
+ */
+function remove_enter_lrln($content)
+{
+    return preg_replace('/[\r\n]/', '', $content);
+}
+
+/**
+ * @name 内容过滤
+ * @desc 过滤掉PHP代码和javascript代码
+ * @param string $content
+ * @return string
+ */
+function content_filter($content){
+    $content = preg_replace('/<\?(.+?)\?>/i', '&lt;?${1}?&gt;', $content);
+    $content = preg_replace('/<script(.*?)>/i', '&lt;script${1}&gt;', $content);
+    $content = preg_replace('/<\/script(.*?)>/i', '&lt;/script${1}&gt;', $content);
+    return $content;
 }
 
 /**
@@ -61,10 +123,10 @@ function add_url_params ($url, $params){
     }
     unset($temp, $url_params, $key, $value, $url_well);
     return $url;
-};
+}
 
 /**
- * @name 向URL中增加参数
+ * @name 删除URL中的参数
  * @desc
  * @param string $url
  * @param array $param_names
@@ -101,7 +163,7 @@ function delete_url_params ($url, $param_names){
     }
     unset($temp, $url_params, $key, $value, $url_well);
     return $url;
-};
+}
 
 /**
  * @name 获取客户端IP
@@ -122,117 +184,4 @@ function client_ip(){
         $ip = '';
     }
     return preg_match ( '/[\d\.]{7,15}/', $ip, $matches ) ? $matches [0] : '';
-}
-
-/**
- * @name 将10进制的数字转换成54进制
- * @desc
- * @return string
- */
-function ten_to_54($int)
-{
-	$result = '';
-	$step = 54;
-	$str = '0123456789abcdefghijklmnopqrstuvwxyz_-^%@!()[];,.*$=|?';
-	$yu = 0;
-	do{
-		//求余
-		$yu = floor($int%$step);
-		//求商
-		$int = $int/$step;
-		$result = $str[$yu].$result;
-	}
-	while($int>1);
-	unset($int, $step, $str, $yu);
-	return $result;
-}
-
-/**
- * @name 将一个字符串归类到0-9的数字中
- * @desc 归类方法是:新将字符串MD5,再取第一个字符的ASCII码数字的最后一位数字(即个位数)
- * @param string $str
- * @return integer 返回0-9中的一个数
- */
-function getOneIntegerByStringASCII($str){
-	$num = ord(md5($str));
-	unset($str);
-	return substr($num, -1, 1);
-}
-
-/**
- * @name 创建一个唯一的字符串
- * @desc
- * @return string 返回MD5后的值,32位长度
- */
-function create_unique_key()
-{
-	return md5(microtime().uniqid().client_ip().uniqid().rand(0,99999));
-}
-
-/**
- * @name 随机获取一个字符串
- * @desc 从数字和大小写字母中随机获取一个字符串
- * @param integerduplicate argument PHPDoc $length 手机号
- * @return string
- */
-function rand_string($length){
-	$str = '';
-	$tmp = '';
-	for ($i = 1; $i <= $length; $i++) {
-//		97~122是小写的英文字母
-//		65~90是大写的
-		$tmp = rand(87, 122);
-		if($tmp<97){
-			$str .= $tmp-87;
-		}
-		else{
-			$tmp = chr($tmp);
-			$str .= (rand(0,1)==1 ? strtoupper($tmp) : $tmp);
-		}
-	}
-	unset($tmp);
-	return $str;
-}
-
-/**
- * @name 判断一个字符串是不是email
- * @desc
- * @param string $email 邮箱 待检查的email字符串
- * @return boolean true表示是email格式,false表示不是email格式
- */
-function is_email($email){
-	return preg_match('/^[a-zA-Z0-9]+([-_.][a-zA-Z0-9]+)*@([a-zA-Z0-9]+[-.])+([a-z]{2,10})$/ims',$email);
-}
-
-/**
- * @name 检查一个密码是否安全
- * @desc 密码长度需为6-20位,且同时包含大小写字母,数字和@#$!_-中的一个符号
- * @param string $password 密码 待检测的密码字符串
- * @return boolean true表示符合最低安全要求,false表示不符合最低安全要求
- */
-function is_safe_password($password){
-	return preg_match('/^(?=.*[0-9].*)(?=.*[A-Z].*)(?=.*[a-z].*)(?=.*[\.\$!#@_-].*).{6,20}$/', $password);
-}
-
-/**
- * @name 随机生成一个密码
- * @desc 密码长度需为6-20位,且同时包含大小写字母,数字和@#$!_-中的一个符号
- * @return string
- */
-function rand_a_password(){
-	$password = rand(100, 99999);
-	for ($i = 1; $i <= 4; $i++) {
-		//97~122是小写的英文字母
-		//65~90是大写的
-		if(rand(1,2)===1)
-		{
-			$password .= chr(rand(65, 90));
-		}
-		else{
-			$password .= chr(rand(97, 122));
-		}
-	}
-	$str = '@#$!_-';
-	$password .= $str[rand(0,5)];
-	return str_shuffle($password);
 }
