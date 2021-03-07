@@ -35,7 +35,6 @@ class hook_route_auth extends hook
 
     public function __construct()
     {
-        global $app;
         //检查用户的访问标识
         $this->check_vk();
         //检查url中是否有tlt参数

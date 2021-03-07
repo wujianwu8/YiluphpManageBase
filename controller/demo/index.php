@@ -16,4 +16,4 @@
 
 $id = input::I()->get_int('id');
 
-return_result('demo/index');
+return result('demo/index');
