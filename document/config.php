@@ -88,7 +88,7 @@ $config = [
      * 你可以使用file_get_contents动态获取文件内容，为了减少读磁盘文件的操作，
      * 你也可以把文件的内容拷贝出来，原样粘贴在这两个参数的值
      * 框架自带的公钥和密钥对为256位的，安全性很差，请自行生成更长的公钥和密钥对
-     * document目录中有文件指导：生成RAS公钥和私钥的方法.txt
+     * document目录中有文件指导：生成RSA公钥和私钥的方法.txt
      * */
     'rsa_private_key' => file_get_contents(APP_PATH.'document/rsa_private_key.pem'),
     'rsa_public_key' => file_get_contents(APP_PATH.'document/rsa_public_key.pem'),
