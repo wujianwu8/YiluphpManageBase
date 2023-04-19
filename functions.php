@@ -37,6 +37,7 @@ function get_url()
  */
 function html_for_javascript_variable($content)
 {
+    $content = preg_replace('/\\\\/', '\\\\\\', $content);
     $content = preg_replace('/"/', '\\"', $content);
     $content = preg_replace("/\'/", "\\'", $content);
     $content = preg_replace('/[\r\n]/', "\\r\\n\"+\r\n\"", $content);
