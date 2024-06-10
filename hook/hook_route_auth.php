@@ -1,16 +1,15 @@
 <?php
-/*
+/**
  * 根据url判断是否需要检查用户的登录状态
  * 把此类名加入到配置的before_controller中就可以实现所有页面都做检查的效果
  */
 
-class hook_route_auth extends hook
+class hook_route_auth
 {
-	private $vk = null; //访问用户的标识符visit key,存在cookie
-	private $lk = null; //登录用户的标识符login key,存在cookie
+    private $vk = null; //访问用户的标识符visit key,存在cookie
 
-	//键名为匹配url的正则表达式
-	private $url_auth = [
+    //键名为匹配url的正则表达式
+    private $url_auth = [
         /*
          * 请求方法有：get和post，没有设置请求方法则表示用任意一种方法都可以
          *
@@ -18,67 +17,105 @@ class hook_route_auth extends hook
          * check检查用户登录状态，如果登录了就读取用户的信息，没有登录也可以访问
          * login用户必须登录才能访问
          * */
-	    'get_check' => [
+        'get'          => [
+//            '/^\/(\?.*)*$/',
         ],
-        'post_check' => [
+        'get_check'    => [
+            '/^\/h5\/confirm/',
         ],
-        'get_login' => [
-            '/^\/(\?.*)*$/',
-            '/^\/demo\/index/',
+        'post'         => [
         ],
-        'post_login' => [
+        'get_post_api' => [
+            '/^\/api\/create_order/',
+            '/^\/api\/get_order_by_id/',
+        ],
+        'get_login'    => [
+        ],
+        'post_login'   => [
         ],
 
-	];
+    ];
 
-    public function run(){}
+    protected static $instance = null;
+
+    /**
+     * 获取单例
+     */
+    public static function I()
+    {
+        if (empty(self::$instance)) {
+            return self::$instance = new self();
+        }
+        return self::$instance;
+    }
 
     public function __construct()
     {
+    }
+
+    public function check_vk()
+    {
+        //vk即visit key，存在客户端的，用户访问系统的唯一标识
+        if (!isset($_COOKIE['vk'])) {
+            $domain = isset($GLOBALS['config']['root_domain']) ? $GLOBALS['config']['root_domain'] : '';
+            $_COOKIE['vk'] = create_unique_key();
+            setcookie('vk', $_COOKIE['vk'], time() + TIME_10_YEAR, '/', $domain);
+        }
+        $this->vk = $_COOKIE['vk'];
+    }
+
+    public function run()
+    {
+        global $app;
         //检查用户的访问标识
         $this->check_vk();
         //检查url中是否有tlt参数
-        $tlt = isset($_GET['tlt'])?$_GET['tlt']:'';
-        if ($tlt){
+        $tlt = isset($_GET['tlt']) ? $_GET['tlt'] : '';
+        if ($tlt) {
             //如果没有登录则登录
-            if (!$user_info = model_user_center::I()->get_current_user_info()){
+            if (!model_user_center::I()->get_current_user_info()) {
                 $user_info = model_user_center::I()->check_login_by_tlt($tlt);
-                if (empty($user_info) || !is_array($user_info)){
+                if (empty($user_info) || !is_array($user_info)) {
                     $GLOBALS['dialog_error'] = YiluPHP::I()->lang('login_failed');
                 }
-                else if ($user_info['code']==-1){
+                else if ($user_info['code'] == -1) {
                     $GLOBALS['dialog_error'] = YiluPHP::I()->lang('login_failed_or_timed_out');
                 }
-                else if ($user_info['code']==0){
+                else if ($user_info['code'] == 0) {
                     //缓存用户登录的信息
-                    redis_y::I()->hmset(REDIS_LOGIN_USER_INFO.$this->vk, $user_info['data']['user_info']);
-                    redis_y::I()->expire(REDIS_LOGIN_USER_INFO.$this->vk, TIME_30_SEC);
+                    redis_y::I()->hmset(REDIS_LOGIN_USER_INFO . $this->vk, $user_info['data']['user_info']);
+                    redis_y::I()->expire(REDIS_LOGIN_USER_INFO . $this->vk, TIME_30_SEC);
                     //记录当前登录用户的UID
-                    redis_y::I()->set(REDIS_LAST_LOGIN_UID.$this->vk, $user_info['data']['user_info']['uid']);
-                    redis_y::I()->expire(REDIS_LAST_LOGIN_UID.$this->vk, TIME_DAY);
+                    redis_y::I()->set(REDIS_LAST_LOGIN_UID . $this->vk, $user_info['data']['user_info']['uid']);
+                    redis_y::I()->expire(REDIS_LAST_LOGIN_UID . $this->vk, TIME_DAY);
 
+                    //创建用户扩展信息
+                    model_user_extension::I()->insert_user_extension($user_info['data']['user_info']['uid']);
                     //去除tlt参数后重新加载
-                    header('Location:'.delete_url_params(get_host_url(), ['tlt']));
+                    header('Location:' . delete_url_params(get_host_url(), ['tlt']));
                     exit;
                 }
-                else if ($user_info['code']>0){
-                    $GLOBALS['dialog_error'] = $user_info['msg'].'('.$user_info['code'].')';
-                    throw new validate_exception($GLOBALS['dialog_error'], CODE_SYSTEM_ERR);
+                else if ($user_info['code'] > 0) {
+                    $GLOBALS['dialog_error'] = $user_info['msg'] . '(' . $user_info['code'] . ')';
                 }
             }
-            else{
+            else {
                 //去除tlt参数后重新加载
-                header('Location:'.delete_url_params(get_host_url(), ['tlt']));
+                header('Location:' . delete_url_params(get_host_url(), ['tlt']));
                 exit;
             }
         }
         //获取当前使用的请求方法
         $method = strtolower($_SERVER['REQUEST_METHOD']);
         //获取当前url
-        foreach($this->url_auth as $rules => $patterns){
+        foreach ($this->url_auth as $rules => $patterns) {
             $rules = explode('_', $rules);
-            foreach ($patterns as  $pattern) {
-                if (preg_match($pattern, $_SERVER['REQUEST_URI'])) {
+            foreach ($patterns as $pattern) {
+                $uri = $_SERVER['REQUEST_URI'];
+                if (strpos($uri, url_pre_lang()) === 0) {
+                    $uri = substr($uri, strlen(url_pre_lang()));
+                }
+                if (preg_match($pattern, $uri)) {
                     if ((in_array('get', $rules) || in_array('post', $rules)) && !in_array($method, $rules)) {
                         //请求方法错误
                         throw new validate_exception(YiluPHP::I()->lang('request_method_error'), CODE_REQUEST_METHOD_ERROR);
@@ -95,21 +132,15 @@ class hook_route_auth extends hook
                             unset($user_info);
                         }
                     }
+                    foreach ($rules as $rule) {
+                        if (!in_array($rule, ['get', 'post', 'check', 'login', 'guest'])) {
+                            $class_name = 'hook_' . $rule;
+                            $class_name::I()->check();
+                        }
+                    }
                 }
             }
         }
-    }
-
-    public function check_vk()
-    {
-        //vk即visit key，存在客户端的，用户访问系统的唯一标识
-        if (!isset($_COOKIE['vk'])){
-            $domain = isset($GLOBALS['config']['root_domain']) ? $GLOBALS['config']['root_domain'] : '';
-            $_COOKIE['vk'] = create_unique_key();
-            setcookie('vk', $_COOKIE['vk'], time()+TIME_10_YEAR, '/', $domain);
-        }
-        $this->vk = $_COOKIE['vk'];
-        return;
     }
 
     public function __destruct()
